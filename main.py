@@ -8,12 +8,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 api = Api(app)
-
+db.create_all()
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    source = db.Column(db.String(50))
+    author = db.Column(db.String(50))
     title = db.Column(db.String(50))
+    description = db.Column(db.String(200))
+    url = db.Column(db.String(50))
+    urlToImage = db.Column(db.String(50))
+    publishedAt = db.Column(db.String(50))
     content = db.Column(db.String(255))
+    category = db.Column(db.String(50))
 
     def __repr__(self):
         return '<Post %s>' % self.title
@@ -21,7 +28,7 @@ class Post(db.Model):
 
 class PostSchema(ma.Schema):
     class Meta:
-        fields = ("id", "title", "content")
+        fields = ("id", "source","author","title","description","url","urlToImage","publishedAt", "content","category")
 
 
 post_schema = PostSchema()
@@ -35,8 +42,15 @@ class PostListResource(Resource):
 
     def post(self):
         new_post = Post(
-            title=request.json['title'],
-            content=request.json['content']
+         source=request.json['source'],
+         author=request.json['author'],
+         title=request.json['title'],
+         description=request.json['description'],
+         url=request.json['url'],
+         urlToImage=request.json['urlToImage'],
+         publishedAt=request.json['publishedAt'],
+         content=request.json['content'],
+         category=request.json['category']
         )
         db.session.add(new_post)
         db.session.commit()
@@ -51,10 +65,24 @@ class PostResource(Resource):
     def patch(self, post_id):
         post = Post.query.get_or_404(post_id)
 
+        if 'source' in request.json:
+            post.source = request.json['source']
+        if 'author' in request.json:
+            post.author = request.json['author']
         if 'title' in request.json:
             post.title = request.json['title']
+        if 'description' in request.json:
+            post.description = request.json['description']
+        if 'url' in request.json:
+            post.url = request.json['url']
+        if 'urlToImage' in request.json:
+            post.urlToImage = request.json['urlToImage']
+        if 'publishedAt' in request.json:
+            post.publishedAt = request.json['publishedAt']
         if 'content' in request.json:
             post.content = request.json['content']
+        if 'category' in request.json:
+            post.category = request.json['category']
 
         db.session.commit()
         return post_schema.dump(post)
